@@ -9,7 +9,7 @@ async function onStart(chatId, firstName) {
   console.log(!userExists);
 
   if (!userExists) {
-    // malumotlar bazasida yangi foydalanuvchi yaratish
+    
     const newUser = new User({
       telegramId: chatId,
       firstname: firstName,
