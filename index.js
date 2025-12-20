@@ -15,7 +15,7 @@ const TOKEN = process.env.BOT_TOKEN;
 
 const bot = new TelegramBot(TOKEN, { polling: true });
 
-// db connection
+
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {

@@ -1,3 +1,12 @@
+import mongoose from "mongoose";
+
+const userSchema = new mongoose.Schema({
+  telegramId: {
+    type: String,
+    unique: true,
+    required: true,
+  },
+  balance: {
     type: Number,
     default: 2000,
   },
@@ -9,4 +18,5 @@
   phone: String,
 });
 
-const User = new mongoose.model("User", userSchema);
+const User = mongoose.model("User", userSchema);
+export default User;

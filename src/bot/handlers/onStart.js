@@ -1,31 +1,30 @@
+import User from "../../models/User.js";
 
- async function onStart(msg) {
-  const chatId = msg.chat.id;
+async function onStart(msg, bot) {
+  const chatId = msg.chat.id.toString();
   const firstname = msg.chat.first_name;
 
-  const existingUser = await User.findOne({ chatId: chatId });
-  let user = await User.findOne({ chatId: chatId });
+  let user = await User.findOne({ telegramId: chatId });
 
-  if (existingUser == null) {
-    const newUser = new User({
-  if (user == null) {
+  if (!user) {
     user = new User({
-      chatId: chatId,
+      telegramId: chatId,
       firstname: firstname,
       username: msg.chat.username,
     });
 
-    newUser.save();
-    user.save();
+    await user.save();
   } else {
     user = await User.findOneAndUpdate(
-      { chatId: chatId },
-      { firstname: firstname, username: msg.chat.username, action: "start" }
+      { telegramId: chatId },
+      { $set: { firstname: firstname, username: msg.chat.username, action: "start" } },
+      { new: true }
     );
   }
 
-  console.log(existingUser);
   console.log(user);
 
-  await bot.sendMessage(
-    chatId,
+  await bot.sendMessage(chatId, "Botga xush kelibsiz!");
+}
+
+export default onStart;

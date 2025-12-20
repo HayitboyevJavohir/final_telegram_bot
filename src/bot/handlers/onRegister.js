@@ -1,16 +1,15 @@
 import User from "../../models/User.js";
 
 async function onRegister(msg, bot) {
-  const chatId = msg.chat.id;
-  const text = msg.text;
+  const chatId = msg.chat.id.toString(); // stringga aylantirish
 
-  let user = await User.findOne({ chatId: chatId });
-
+  let user = await User.findOne({ telegramId: chatId });
   if (!user) return;
 
   user = await User.findOneAndUpdate(
-    { chatId: chatId },
-    { action: "awaiting_name" }
+    { telegramId: chatId },
+    { $set: { action: "awaiting_name" } },
+    { new: true }
   );
 
   bot.sendMessage(chatId, "Ismingizni kiriting");

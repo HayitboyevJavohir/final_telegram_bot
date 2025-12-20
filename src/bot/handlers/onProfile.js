@@ -1,11 +1,14 @@
 async function onProfile(msg) {
-  const chatId = msg.chat.id;
+  const chatId = msg.chat.id.toString();
 
-  const user = await User.findOne({ chatId: chatId });
-  let user = await User.findOne({ chatId: chatId });
-
+  let user = await User.findOne({ telegramId: chatId });
   if (!user) return;
 
-  user = await User.findOneAndUpdate({ chatId: chatId }, { action: "profile" });
+  user = await User.findOneAndUpdate(
+    { telegramId: chatId },
+    { $set: { action: "profile" } },
+    { new: true }
+  );
 
   console.log(user);
+}
