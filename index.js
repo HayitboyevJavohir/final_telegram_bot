@@ -1,13 +1,8 @@
 // import TelegramBot from "node-telegram-bot-api";
 import TelegramBot from "node-telegram-bot-api";
 import { config } from "dotenv";
-import { onElse } from "./src/onElse.js";
-import { onCourses } from "./src/onCourse.js";
-import { onStart } from "./src/onStart.js";
-import { onRegister } from "./src/onRegister.js";
 import mongoose from "mongoose";
-import User from "./src/models/User.js";
-import onUsers from "./src/onUser.js";
+
 
 config();
 
