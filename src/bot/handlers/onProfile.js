@@ -1,3 +1,5 @@
+import User from "../../models/User.js";
+
 async function onProfile(msg) {
   const chatId = msg.chat.id.toString();
 
@@ -12,3 +14,6 @@ async function onProfile(msg) {
 
   console.log(user);
 }
+
+export default onProfile;
+
