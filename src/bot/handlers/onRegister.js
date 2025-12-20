@@ -1,7 +1,7 @@
 import User from "../../models/User.js";
 
 async function onRegister(msg, bot) {
-  const chatId = msg.chat.id.toString(); // stringga aylantirish
+  const chatId = msg.chat.id.toString();
 
   let user = await User.findOne({ telegramId: chatId });
   if (!user) return;

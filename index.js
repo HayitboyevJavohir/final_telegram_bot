@@ -1,79 +1,62 @@
-// import TelegramBot from "node-telegram-bot-api";
-import TelegramBot from "node-telegram-bot-api";
 import { config } from "dotenv";
+import TelegramBot from "node-telegram-bot-api";
 import mongoose from "mongoose";
 
+import onStart from "./src/bot/handlers/onStart.js";
+import onProfile from "./src/bot/handlers/onProfile.js";
+import onRegister from "./src/bot/handlers/onRegister.js";
+import User from "./src/models/User.js";
 
 config();
 
 const TOKEN = process.env.BOT_TOKEN;
+const ADMIN_ID = 875072364;
 
-const bot = new TelegramBot(TOKEN, { polling: true });
-
+export const bot = new TelegramBot(TOKEN, { polling: true });
 
 mongoose
   .connect(process.env.MONGO_URI)
-  .then(() => {
-    console.log("db is connected...");
-  })
-  .catch(() => {
-    console.log(`Error: db is not connected...!`);
-  });
+  .then(() => console.log("DB connected..."))
+  .catch((err) => console.log("DB connection error:", err));
 
-bot.on("message", (msg) => {
-  // console.log(msg);
-  const chatId = msg.chat.id;
+bot.on("message", async (msg) => {
+  const chatId = msg.chat.id.toString();
   const text = msg.text;
-  const firstName = msg.chat.first_name;
 
-  if (text == "/start") {
-    onStart(chatId, firstName);
-  } else if (text == "📚 Kurslar") {
-    onCourses(chatId);
-  } else if (text == "✍️ Ro‘yxatdan o‘tish") {
-    onRegister(chatId);
-  } else if (text == "/users") {
-    onUsers(chatId);
-  } else {
-    onElse(chatId);
-  }
-});
+  if (text === "/start") return onStart(msg, bot);
+  if (text === "✍️ Ro‘yxatdan o‘tish") return onRegister(msg, bot);
 
-bot.on("callback_query", (query) => {
-  console.log(query);
-  const chatId = query.message.chat.id;
-  const firstName = query.message.chat.first_name;
-  const data = query.data;
+  const user = await User.findOne({ telegramId: chatId });
+  if (!user) return bot.sendMessage(chatId, "Iltimos /start bosing!");
 
-  if (data == "course_english") {
-    bot.sendMessage(
-      chatId,
-      `
-    🇬🇧 Ingliz tili kursi haqida:
+  console.log("action:", user.action);
 
-📆 Davomiyligi: 3 oy  
-⏰ Darslar: Haftasiga 3 marta (1,5 soatdan)  
-👨‍🏫 O‘qituvchi: Tajribali filologlar  
-💰 Narxi: 450 000 so‘m / oy
-
-✍️ Agar sizni bu kurs qiziqtirsa, “Ro‘yxatdan o‘tish” tugmasini bosing.
-
-    `,
-      {
-        reply_markup: {
-          keyboard: [
-            [{ text: "✍️ Ro‘yxatdan o‘tish" }],
-            [{ text: "⬅️ Orqaga" }],
-          ],
-          resize_keyboard: true,
-        },
-      }
+  if (user.action === "awaiting_name") {
+    await User.findOneAndUpdate(
+      { telegramId: chatId },
+      { $set: { action: "awaiting_phone", name: text } },
+      { new: true }
     );
+    return bot.sendMessage(chatId, "Telefon raqamingizni kiriting:");
   }
 
-  // bot.sendMessage(chatId, data);
+  if (user.action === "awaiting_phone") {
+    await User.findOneAndUpdate(
+      { telegramId: chatId },
+      { $set: { action: "finish_register", phone: text } },
+      { new: true }
+    );
+
+    bot.sendMessage(chatId, `Tabriklaymiz, siz muvaffaqiyatli ro'yhatdan o'tdingiz ✅`);
+    bot.sendMessage(chatId, `Name: ${user.name}\nPhone: ${text}`);
+    bot.sendMessage(
+      ADMIN_ID,
+      `Yangi xabar 🔔 \n\n🔘 ismi: ${user.name}\n🔘 tel: ${text}`
+    );
+    return;
+  }
+
+  return bot.sendMessage(chatId, "Kutilmagan xatolik... /start bosing!");
 });
 
 console.log("Bot ishga tushdi");
-
-export { bot };
